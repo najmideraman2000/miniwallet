@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: miniwallet
+logging:
+  file:
+    name: log/wallet-service.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  level:
+    com.assessment.miniwallet: INFO
