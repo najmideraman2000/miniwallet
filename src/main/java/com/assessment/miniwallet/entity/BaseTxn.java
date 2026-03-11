@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @SuperBuilder
 public abstract class BaseTxn {
 
+    @Column(name = "reference_number", nullable = false, updatable = false, unique = true, length = 18)
+    private String referenceNumber;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, updatable = false)
     private TransactionType type;

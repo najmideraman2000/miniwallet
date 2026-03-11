@@ -10,5 +10,5 @@ import java.util.List;
 public interface TxnHistoryRepository extends JpaRepository<TxnHistory, Long> {
 
     @Query("SELECT t FROM TxnHistory t WHERE t.sourceUser.id = :userId OR t.destinationUser.id = :userId ORDER BY t.timestamp DESC")
-    List<TxnHistory> findByUserIdOrderByTimestampDesc(@Param("userId") Long userId);
+    List<TxnHistory> findByUserIdOrderByTimestampDesc(@Param("userId") String userId);
 }

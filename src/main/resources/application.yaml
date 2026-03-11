@@ -1,6 +1,28 @@
 spring:
   application:
     name: miniwallet
+  docker:
+    compose:
+      enabled: false
+
+  # --- Database Connection ---
+  datasource:
+    url: jdbc:postgresql://localhost:5432/miniwallet
+    username: postgres
+    password: mysecretpassword
+    driver-class-name: org.postgresql.Driver
+
+  # --- Hibernate & JPA Settings ---
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    hibernate:
+      ddl-auto: none
+
+# --- Logging Configuration ---
 logging:
   file:
     name: log/wallet-service.log

@@ -2,5 +2,5 @@ package com.assessment.miniwallet.dto;
 
 import java.math.BigDecimal;
 
-public record CreditRequest(
+public record DebitRequest(
         BigDecimal amount) {}
