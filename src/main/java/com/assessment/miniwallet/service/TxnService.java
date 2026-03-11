@@ -1,6 +1,7 @@
 package com.assessment.miniwallet.service;
 
 import com.assessment.miniwallet.dto.TransactionResponse;
+import com.assessment.miniwallet.dto.UserResponse;
 import com.assessment.miniwallet.entity.TxnHistory;
 import com.assessment.miniwallet.entity.User;
 import com.assessment.miniwallet.entity.TxnMaster;
@@ -30,12 +31,28 @@ public class TxnService {
     private final TxnMasterRepository txnMasterRepository;
     private final TxnHistoryRepository txnHistoryRepository;
 
-    public BigDecimal getBalance(Long userId) {
+    @Transactional
+    public UserResponse createUser(String id, String name, String email) {
+        log.info("Creating new user with email: {}", email);
+
+        User newUser = User.builder()
+                .id(id)
+                .name(name)
+                .email(email)
+                .balance(BigDecimal.ZERO)
+                .build();
+
+        User savedUser = userRepository.save(newUser);
+
+        return new UserResponse(savedUser.getId(), savedUser.getName(), savedUser.getEmail(), savedUser.getBalance());
+    }
+
+    public BigDecimal getBalance(String userId) {
         return getUser(userId).getBalance();
     }
 
     @Transactional
-    public TxnMaster credit(Long userId, BigDecimal amount) {
+    public TransactionResponse credit(String userId, BigDecimal amount) {
         log.info("Initiating CREDIT for userId: {}, amount: {}", userId, amount);
         User user = getUser(userId);
 
@@ -48,12 +65,12 @@ public class TxnService {
                 user
         );
 
-        log.info("Transaction created with PENDING status. ID: {}", transaction.getId());
+        log.info("Transaction created with PENDING status. Reference: {}", transaction.getReferenceNumber());
 
         try {
             processCredit(user, amount);
             transaction.setStatus(TransactionStatus.SUCCESS);
-            log.info("Successfully processed CREDIT for userId: {}. Transaction ID: {}", userId, transaction.getId());
+            log.info("Successfully processed CREDIT for userId: {}. Reference: {}", userId, transaction.getReferenceNumber());
         } catch (Exception e) {
             transaction.setStatus(TransactionStatus.FAILED);
             txnMasterRepository.save(transaction);
@@ -61,11 +78,12 @@ public class TxnService {
             throw e;
         }
 
-        return txnMasterRepository.save(transaction);
+        TxnMaster savedTxn = txnMasterRepository.save(transaction);
+        return mapToResponseDto(savedTxn);
     }
 
     @Transactional(noRollbackFor = InsufficientFundsException.class)
-    public TxnMaster transfer(Long sourceUserId, Long destinationUserId, BigDecimal amount) {
+    public TransactionResponse transfer(String sourceUserId, String destinationUserId, BigDecimal amount) {
         log.info("Initiating TRANSFER from userId: {} to userId: {}, amount: {}", sourceUserId, destinationUserId, amount);
 
         User source = getUser(sourceUserId);
@@ -80,13 +98,13 @@ public class TxnService {
                 destination
         );
 
-        log.info("Transaction created with PENDING status. ID: {}", transaction.getId());
+        log.info("Transaction created with PENDING status. Reference: {}", transaction.getReferenceNumber());
 
         try {
             processDebit(source, amount);
             processCredit(destination, amount);
             transaction.setStatus(TransactionStatus.SUCCESS);
-            log.info("Successfully processed TRANSFER. Transaction ID: {}", transaction.getId());
+            log.info("Successfully processed TRANSFER. Reference: {}", transaction.getReferenceNumber());
         } catch (InsufficientFundsException e) {
             transaction.setStatus(TransactionStatus.FAILED);
             txnMasterRepository.save(transaction);
@@ -98,7 +116,9 @@ public class TxnService {
             log.error("Unexpected error during TRANSFER: {}", e.getMessage());
             throw e;
         }
-        return txnMasterRepository.save(transaction);
+
+        TxnMaster savedTxn = txnMasterRepository.save(transaction);
+        return mapToResponseDto(savedTxn);
     }
 
     @Transactional
@@ -120,7 +140,7 @@ public class TxnService {
         log.info("Successfully archived {} transactions.", historyRecords.size());
     }
 
-    public List<TransactionResponse> getTransactionHistory(Long userId) {
+    public List<TransactionResponse> getTransactionHistory(String userId) {
         log.debug("Fetching combined transaction history for userId: {}", userId);
 
         List<TxnMaster> activeTxns = txnMasterRepository.findByUserIdOrderByTimestampDesc(userId);
@@ -128,8 +148,8 @@ public class TxnService {
 
         List<TransactionResponse> combinedHistory = new java.util.ArrayList<>();
 
-        activeTxns.forEach(txn -> combinedHistory.add(mapToResponseDto(txn.getId(), txn)));
-        archivedTxns.forEach(txn -> combinedHistory.add(mapToResponseDto(txn.getId(), txn)));
+        activeTxns.forEach(txn -> combinedHistory.add(mapToResponseDto(txn)));
+        archivedTxns.forEach(txn -> combinedHistory.add(mapToResponseDto(txn)));
 
         combinedHistory.sort(java.util.Comparator.comparing(TransactionResponse::timestamp).reversed());
 
@@ -147,7 +167,7 @@ public class TxnService {
         userRepository.save(user);
     }
 
-    private User getUser(Long userId) {
+    private User getUser(String userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found: " + userId));
     }
@@ -166,7 +186,13 @@ public class TxnService {
             User source,
             User destination) {
 
+        Long sequenceValue = txnMasterRepository.getNextReferenceSequence();
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyMMddHHmm");
+        String datePrefix = LocalDateTime.now().format(formatter);
+        String referenceNumber = datePrefix + String.format("%08d", sequenceValue);
+
         TxnMaster transaction = TxnMaster.builder()
+                .referenceNumber(referenceNumber)
                 .type(type)
                 .category(category)
                 .status(status)
@@ -175,12 +201,14 @@ public class TxnService {
                 .destinationUser(destination)
                 .timestamp(LocalDateTime.now())
                 .build();
+
         return txnMasterRepository.save(transaction);
     }
 
     private TxnHistory mapToHistoryRecord(TxnMaster master) {
         return TxnHistory.builder()
                 .id(master.getId())
+                .referenceNumber(master.getReferenceNumber())
                 .type(master.getType())
                 .category(master.getCategory())
                 .status(master.getStatus())
@@ -191,9 +219,9 @@ public class TxnService {
                 .build();
     }
 
-    private TransactionResponse mapToResponseDto(Long id, com.assessment.miniwallet.entity.BaseTxn txn) {
+    private TransactionResponse mapToResponseDto(com.assessment.miniwallet.entity.BaseTxn txn) {
         return new TransactionResponse(
-                id,
+                txn.getReferenceNumber(),
                 txn.getType().name(),
                 txn.getCategory().name(),
                 txn.getStatus().name(),

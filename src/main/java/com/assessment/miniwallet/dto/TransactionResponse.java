@@ -4,12 +4,12 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record TransactionResponse(
-        Long transactionId,
+        String transactionId,
         String type,
         String category,
         String status,
         BigDecimal amount,
-        Long sourceUserId,
-        Long destinationUserId,
+        String sourceUserId,
+        String destinationUserId,
         LocalDateTime timestamp
 ) {}
