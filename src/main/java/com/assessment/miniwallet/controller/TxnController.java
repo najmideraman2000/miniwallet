@@ -1,10 +1,6 @@
 package com.assessment.miniwallet.controller;
 
-import com.assessment.miniwallet.dto.CreditRequest;
-import com.assessment.miniwallet.dto.TransactionResponse;
-import com.assessment.miniwallet.dto.TransferRequest;
-import com.assessment.miniwallet.dto.UserRequest;
-import com.assessment.miniwallet.dto.UserResponse;
+import com.assessment.miniwallet.dto.*;
 import com.assessment.miniwallet.service.TxnService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +34,12 @@ public class TxnController {
     public ResponseEntity<TransactionResponse> credit(@PathVariable String userId, @RequestBody CreditRequest request) {
         log.info("Received top-up request for userId: {}, amount: {}", userId, request.amount());
         return ResponseEntity.ok(txnService.credit(userId, request.amount()));
+    }
+
+    @PostMapping("/{userId}/pay")
+    public ResponseEntity<TransactionResponse> debit(@PathVariable String userId, @RequestBody DebitRequest request) {
+        log.info("Received payment request for userId: {}, amount: {}", userId, request.amount());
+        return ResponseEntity.ok(txnService.debit(userId, request.amount()));
     }
 
     @PostMapping("/transfer")

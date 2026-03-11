@@ -83,6 +83,42 @@ public class TxnService {
     }
 
     @Transactional(noRollbackFor = InsufficientFundsException.class)
+    public TransactionResponse debit(String userId, BigDecimal amount) {
+        log.info("Initiating DEBIT for userId: {}, amount: {}", userId, amount);
+        User user = getUser(userId);
+
+        TxnMaster transaction = saveTransaction(
+                TransactionType.DEBIT,
+                TransactionCategory.PAYMENT,
+                TransactionStatus.PENDING,
+                amount,
+                user,
+                null
+        );
+
+        log.info("Transaction created with PENDING status. Reference: {}", transaction.getReferenceNumber());
+
+        try {
+            processDebit(user, amount);
+            transaction.setStatus(TransactionStatus.SUCCESS);
+            log.info("Successfully processed DEBIT for userId: {}. Reference: {}", userId, transaction.getReferenceNumber());
+        } catch (InsufficientFundsException e) {
+            transaction.setStatus(TransactionStatus.FAILED);
+            txnMasterRepository.save(transaction);
+            log.warn("Debit FAILED due to insufficient funds for userId: {}", userId);
+            throw e;
+        } catch (Exception e) {
+            transaction.setStatus(TransactionStatus.FAILED);
+            txnMasterRepository.save(transaction);
+            log.error("Failed to process DEBIT for userId: {}. Reason: {}", userId, e.getMessage());
+            throw e;
+        }
+
+        TxnMaster savedTxn = txnMasterRepository.save(transaction);
+        return mapToResponseDto(savedTxn);
+    }
+
+    @Transactional(noRollbackFor = InsufficientFundsException.class)
     public TransactionResponse transfer(String sourceUserId, String destinationUserId, BigDecimal amount) {
         log.info("Initiating TRANSFER from userId: {} to userId: {}, amount: {}", sourceUserId, destinationUserId, amount);
 
