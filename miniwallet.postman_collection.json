@@ -1,0 +1,198 @@
+{
+  "info": {
+    "name": "MiniWallet API",
+    "description": "API collection for the MiniWallet",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Create User A",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/wallet/user",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "wallet",
+            "user"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"NAJMI-001\",\n  \"name\": \"Muhammad Najmi Deraman\",\n  \"email\": \"najmideraman2000@example.com\"\n}"
+        }
+      }
+    },
+    {
+      "name": "2. Create User B (For Transfer)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/wallet/user",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "wallet",
+            "user"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"VENDOR-999\",\n  \"name\": \"Coffee Shop\",\n  \"email\": \"billing@coffeeshop.com\"\n}"
+        }
+      }
+    },
+    {
+      "name": "3. Top-Up User A",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/wallet/NAJMI-001/top-up",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "wallet",
+            "NAJMI-001",
+            "top-up"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount\": 500.00\n}"
+        }
+      }
+    },
+    {
+      "name": "4. Transfer to User B",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/wallet/transfer",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "wallet",
+            "transfer"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sourceUserId\": \"NAJMI-001\",\n  \"destinationUserId\": \"VENDOR-999\",\n  \"amount\": 15.50\n}"
+        }
+      }
+    },
+    {
+      "name": "5. Debit User A",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/wallet/NAJMI-001/debit",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "wallet",
+            "NAJMI-001",
+            "debit"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount\": 25.00\n}"
+        }
+      }
+    },
+    {
+      "name": "6. Check Balance User A",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/wallet/NAJMI-001/balance",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "wallet",
+            "NAJMI-001",
+            "balance"
+          ]
+        }
+      }
+    },
+    {
+      "name": "7. Get Transaction History User A",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/wallet/NAJMI-001/transactions",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "wallet",
+            "NAJMI-001",
+            "transactions"
+          ]
+        }
+      }
+    }
+  ]
+}
