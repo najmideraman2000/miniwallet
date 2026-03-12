@@ -1,7 +1,7 @@
 # Technical Assessment: Digital Wallet Microservice
 
 ## Project Description
-This is a robust Digital Wallet Microservice built with Spring Boot. It simulates user balances, peer-to-peer fund transfers, and wallet top-ups/debits.
+MiniWallet is a robust Digital Wallet Microservice built with Spring Boot. It simulates user balances, peer-to-peer fund transfers, and wallet top-ups/debits.
 
 The emphasis of this architecture is on **data integrity, scalability, and clean API design**.
 
@@ -15,7 +15,7 @@ The emphasis of this architecture is on **data integrity, scalability, and clean
 ---
 
 ## Technology Stack
-* **Language:** Java 17
+* **Language:** Java 17+
 * **Framework:** Spring Boot 3.5.x (Web, Data JPA, Validation)
 * **Database:** PostgreSQL 16
 * **Documentation:** Swagger / OpenAPI 3.0
@@ -46,6 +46,16 @@ The database consists of three main tables, plus a sequence generator.
 
 **3. `txn_history` Table (Archived Ledger)**
 Identical to `txn_master`, but uses a standard `BIGINT` PK inherited from the master table to prevent ID collision. Added `move_date` to track when the scheduler archived the record.
+
+---
+
+## Live Cloud Deployment
+This microservice is actively deployed on the public internet using Docker and Render. You do not need to download the code to test the API.
+
+* **Live Swagger UI:** [https://miniwallet-api.onrender.com/swagger-ui/index.html](https://miniwallet-api.onrender.com/swagger-ui/index.html)
+* **Base API URL:** `https://miniwallet-api.onrender.com`
+
+*(Note: This is hosted on a free Render tier. If the service has been inactive for 15 minutes, the very first request may take up to 50 seconds to wake the server. Subsequent requests will process normally).*
 
 ---
 
