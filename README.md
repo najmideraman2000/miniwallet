@@ -10,6 +10,7 @@ The emphasis of this architecture is on **data integrity, scalability, and clean
 * **ACID Transactions:** Financial operations utilize Spring's `@Transactional` boundaries. Transfers process both debit and credit within a single boundary to guarantee atomicity and prevent partial commits.
 * **Archival Scheduler:** Features an automated batch-processing scheduler that moves completed transactions from the active ledger (`txn_master`) to cold storage (`txn_history`), keeping queries on active balances fast.
 * **Global Exception Handling:** Clean, predictable JSON error responses (e.g., catching `InsufficientFundsException` and returning a `400 BAD_REQUEST`).
+* **Audit Logging:** Implemented a custom Servlet Filter (`LoggingFilter`) to intercept, cache, and log all incoming HTTP request bodies and outgoing response payloads for complete observability.
 
 ---
 
@@ -50,16 +51,25 @@ Identical to `txn_master`, but uses a standard `BIGINT` PK inherited from the ma
 
 ## Instructions to Run Locally
 
-### Prerequisites
-1. Java 17+ installed
-2. PostgreSQL running locally on port `5432`
-3. Maven installed
+### Option 1: Run with Docker
+* Simply run this single command to build the app, initialize the database schema, and start the server:
+   ```bash
+   docker compose up --build
+   ```
+  The API will be instantly available at http://localhost:8080/swagger-ui/index.html.
 
-### Setup Steps
+### Option 2: Run via Maven
+   * Java 17+ installed
+   * PostgreSQL running locally on port `5432`
+   * Maven installed
+
 1. **Clone the repository:**
    ```bash
    git clone [https://github.com/najmideraman2000/miniwallet.git](https://github.com/najmideraman2000/miniwallet.git)
+   ```
+   ```bash
    cd miniwallet
+   ```
 
 2. **Setup the Database:**
    * Create a database named `miniwallet` in PostgreSQL.

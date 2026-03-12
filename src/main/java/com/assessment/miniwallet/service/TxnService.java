@@ -35,6 +35,16 @@ public class TxnService {
     public UserResponse createUser(String id, String name, String email) {
         log.info("Creating new user with email: {}", email);
 
+        if (userRepository.existsById(id)) {
+            log.warn("Attempted to create user with duplicate ID: {}", id);
+            throw new IllegalArgumentException("User ID already exists.");
+        }
+
+        if (userRepository.existsByEmail(email)) {
+            log.warn("Attempted to create user with duplicate email: {}", email);
+            throw new IllegalArgumentException("Email is already registered.");
+        }
+
         User newUser = User.builder()
                 .id(id)
                 .name(name)

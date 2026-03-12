@@ -1,9 +1,32 @@
+version: '3.8'
+
 services:
-  postgres:
-    image: 'postgres:latest'
+  db:
+    image: postgres:16-alpine
+    container_name: miniwallet-db
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: miniwallet
     ports:
-      - '5432'
+      - "5432:5432"
+    volumes:
+      - ./src/main/resources/db/migration/V0.0.1_miniwallet_init_schema2.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: miniwallet-app
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logs:/app/logs
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/miniwallet
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+
+volumes:
+  postgres_data:
