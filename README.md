@@ -75,7 +75,7 @@ This microservice is actively deployed on the public internet using Docker and R
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/najmideraman2000/miniwallet.git](https://github.com/najmideraman2000/miniwallet.git)
+   git clone https://github.com/najmideraman2000/miniwallet.git
    ```
    ```bash
    cd miniwallet
